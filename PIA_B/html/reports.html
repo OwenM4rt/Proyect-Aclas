@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - EduControl</title>
+    <link rel="stylesheet" href="../css/reports.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+</head>
+<body>
+    <nav class="navbar">
+       <div class="navbar-brand">
+            <img src="../Img/logo.png" class="navbar-logo">
+            <span>RegistroAclas</span>
+        </div>
+        </div>
+        <div class="navbar-nav">
+            <a href="../html/index.html" class="nav-link">
+                <i class="fas fa-home"></i>
+                Inicio
+            </a>
+            <a href="../html/asistencia.html" class="nav-link">
+                <i class="fas fa-clipboard-check"></i>
+                Asistencia
+            </a>
+            <a href="../php/students.php" class="nav-link">
+                <i class="fas fa-users"></i>
+                Estudiantes
+            </a>
+            <a href="../html/reports.html" class="nav-link active">
+                <i class="fas fa-chart-bar"></i>
+                Reportes
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="reports-header">
+            <div class="header-info">
+                <h1>Reportes y Estadísticas</h1>
+                <p>Análisis detallado de la asistencia escolar</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="exportReport()">
+                    <i class="fas fa-download"></i>
+                    Exportar Reporte
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalStudentsStat">0</h3>
+                    <p>Total Estudiantes</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="presentTodayStat">0</h3>
+                    <p>Presentes Hoy</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="attendanceRateStat">0%</h3>
+                    <p>Tasa de Asistencia (Hoy)</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="absentTodayStat">0</h3>
+                    <p>Ausentes Hoy</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Asistencia por Día</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" onclick="changeChartPeriod(this, 'week')">Semana</button>
+                        <button class="chart-btn" onclick="changeChartPeriod(this, 'month')">Mes</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Asistencia por Grado (Tasa 30 días)</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="gradeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="reports-section">
+            <div class="report-card">
+                <div class="report-header">
+                    <h3>Estudiantes con Mayor Asistencia</h3>
+                    <span class="report-period">Últimos 30 días</span>
+                </div>
+                <div class="report-list" id="topStudentsList">
+                    <p style="text-align: center; padding: 20px;">Cargando...</p>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <div class="report-header">
+                    <h3>Grados con Mejor Asistencia</h3>
+                    <span class="report-period">Tasa 30 días</span>
+                </div>
+                <div class="grade-stats" id="gradeStatsList">
+                     <p style="text-align: center; padding: 20px;">Cargando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script>
+        // Variables globales para los gráficos
+        let attendanceChart = null;
+        let gradeChart = null;
+       const API_URL = '../php/reports.php';
+
+
+        // Ejecutar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllReports();
+        });
+
+        // Función principal para cargar todos los módulos
+        function loadAllReports() {
+            fetchStats();
+            initAttendanceChart('week'); // Cargar gráfico de semana por defecto
+            initGradeChart();
+            fetchTopStudents();
+            fetchTopGrades();
+        }
+
+        // --- 1. TARJETAS DE ESTADÍSTICAS ---
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_URL}?action=get_stats`);
+                if (!response.ok) throw new Error("Error al obtener estadísticas");
+                const stats = await response.json();
+
+                updateStatElement('totalStudentsStat', stats.total_students);
+                updateStatElement('presentTodayStat', stats.present_today);
+                updateStatElement('attendanceRateStat', stats.attendance_rate, '%');
+                updateStatElement('absentTodayStat', stats.absent_today);
+
+            } catch (error) {
+                console.error("❌ Error al cargar estadísticas:", error);
+                showToast("Error al cargar estadísticas principales.", 'error');
+            }
+        }
+
+        // --- 2. GRÁFICO DE LÍNEA (ASISTENCIA DIARIA) ---
+        async function initAttendanceChart(period = 'week') {
+            try {
+                const response = await fetch(`${API_URL}?action=get_daily_attendance_history&period=${period}`);
+                if (!response.ok) throw new Error("Error al obtener historial");
+                const chartData = await response.json();
+
+                const ctx = document.getElementById('attendanceChart');
+                if (!ctx) return;
+                
+                // Formatear labels
+                const labels = chartData.labels.map(date => {
+                    const d = new Date(date + 'T00:00:00'); // Asegurar zona horaria local
+                    return period === 'week' 
+                        ? d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' })
+                        : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                });
+
+                const dataConfig = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Asistencias',
+                        data: chartData.data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                };
+
+                if (attendanceChart) {
+                    // Si el gráfico ya existe, solo actualizamos los datos
+                    attendanceChart.data = dataConfig;
+                    attendanceChart.update();
+                } else {
+                    // Si no, lo creamos
+                    attendanceChart = new Chart(ctx, {
+                        type: 'line',
+                        data: dataConfig,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.1)' }, ticks: { color: '#6b7280' } },
+                                x: { grid: { display: false }, ticks: { color: '#6b7280' } }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                 console.error("❌ Error al cargar gráfico de asistencia:", error);
+                 showToast("Error al cargar gráfico de asistencia.", 'error');
+            }
+        }
+        
+        // Función para cambiar el período del gráfico de línea
+        function changeChartPeriod(button, period) {
+            // Actualizar botones activos
+            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Recargar el gráfico con el nuevo período
+            initAttendanceChart(period);
+        }
+
+        // --- 3. GRÁFICO DE DONA (ASISTENCIA POR GRADO) ---
+        async function initGradeChart() {
+            try {
+                const response = await fetch(`${API_URL}?action=get_grade_data`);
+                if (!response.ok) throw new Error("Error al obtener datos de grados");
+                const gradeData = await response.json();
+                
+                const ctx = document.getElementById('gradeChart');
+                if (!ctx) return;
+                
+                const labels = gradeData.map(g => g.grado);
+                const data = gradeData.map(g => g.rate); // Usamos la TASA
+                
+                const colors = ['#667eea', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'];
+
+                if (gradeChart) gradeChart.destroy(); // Destruir gráfico anterior si existe
+
+                gradeChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 0,
+                            hoverBorderWidth: 2,
+                            hoverBorderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { padding: 20, usePointStyle: true, color: '#6b7280' }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '60%'
+                    }
+                });
+
+            } catch (error) {
+                 console.error("❌ Error al cargar gráfico de grados:", error);
+                 showToast("Error al cargar gráfico de grados.", 'error');
+            }
+        }
+        
+        // --- 4. LISTA TOP ESTUDIANTES ---
+        async function fetchTopStudents() {
+            try {
+                const response = await fetch(`${API_URL}?action=get_top_students`);
+                if (!response.ok) throw new Error("Error al obtener top estudiantes");
+                const topStudents = await response.json();
+
+                const reportList = document.getElementById('topStudentsList');
+                if (!reportList) return;
+
+                if (topStudents.length === 0) {
+                     reportList.innerHTML = '<p style="text-align: center; padding: 20px;">No hay datos de asistencia.</p>';
+                     return;
+                }
+
+                reportList.innerHTML = topStudents.map(item => `
+                    <div class="report-item">
+                        <div class="student-info">
+                            <img src="${item.foto}" alt="${item.nombre}">
+                            <div>
+                                <h4>${item.nombre}</h4>
+                                <span>${item.grado}</span>
+                            </div>
+                        </div>
+                        <div class="attendance-rate">${item.rate}%</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error("❌ Error al cargar top estudiantes:", error);
+                showToast("Error al cargar top estudiantes.", 'error');
+            }
+        }
+
+        // --- 5. LISTA TOP GRADOS ---
+        async function fetchTopGrades() {
+             try {
+                const response = await fetch(`${API_URL}?action=get_grade_data`);
+                if (!response.ok) throw new Error("Error al obtener datos de grados");
+                let gradeData = await response.json();
+
+                // Ordenar por tasa de asistencia
+                gradeData.sort((a, b) => b.rate - a.rate);
+                
+                const gradeStats = document.getElementById('gradeStatsList');
+                if (!gradeStats) return;
+
+                if (gradeData.length === 0) {
+                     gradeStats.innerHTML = '<p style="text-align: center; padding: 20px;">No hay estudiantes registrados.</p>';
+                     return;
+                }
+
+                gradeStats.innerHTML = gradeData.slice(0, 3).map(item => `
+                    <div class="grade-stat">
+                        <div class="grade-info">
+                            <h4>${item.grado}</h4>
+                            <span>${item.total_students} estudiantes</span>
+                        </div>
+                        <div class="grade-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${item.rate}%"></div>
+                            </div>
+                            <span>${item.rate}%</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error("❌ Error al cargar top grados:", error);
+                showToast("Error al cargar top grados.", 'error');
+            }
+        }
+        
+        // --- 6. EXPORTAR REPORTE EN EXCEL ---
+        async function exportReport() {
+            try {
+                showToast('📊 Generando reporte, por favor espera...', 'info');
+                
+                // 1. Obtener estadísticas generales
+                const statsRes = await fetch(`${API_URL}?action=get_stats`);
+                const stats = await statsRes.json();
+                
+                // 2. Obtener datos de todos los estudiantes
+                const studentsRes = await fetch(`${API_URL}?action=get_export_data`);
+                const studentsData = await studentsRes.json();
+
+                const today = new Date().toISOString().split('T')[0];
+
+                // 3. Construir datos para Excel
+                const reportData = [
+                    ["Fecha del Reporte", today],
+                    [],
+                    ["Estadísticas Generales"],
+                    ["Total Estudiantes", stats.total_students],
+                    ["Presentes Hoy", stats.present_today],
+                    ["Ausentes Hoy", stats.absent_today],
+                    ["Tasa de Asistencia Hoy (%)", stats.attendance_rate],
+                    [],
+                    ["Reporte Detallado de Estudiantes"],
+                    ["Código (Matrícula)", "Nombre", "Grado", "Asistencias (últimos 30 días)"]
+                ];
+
+                studentsData.forEach(student => {
+                    reportData.push([
+                        student.matricula,
+                        student.nombre,
+                        student.grado,
+                        parseInt(student.asistencias_30_dias)
+                    ]);
+                });
+
+                // 4. Crear Excel
+                const ws = XLSX.utils.aoa_to_sheet(reportData);
+                // Ajustar ancho de columnas
+                ws['!cols'] = [ { wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 25 } ];
+                
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Reporte de Asistencia");
+                XLSX.writeFile(wb, `reporte_asistencia_${today}.xlsx`);
+
+                showToast('✅ Reporte exportado en Excel correctamente', 'success');
+
+            } catch (error) {
+                 console.error("❌ Error al exportar:", error);
+                 showToast("Error al generar el reporte Excel.", 'error');
+            }
+        }
+        
+        // --- FUNCIONES AUXILIARES ---
+
+        // Función para mostrar notificaciones (toast)
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`; // Usar 'info', 'success', 'warning', 'error'
+            
+            const icons = {
+                success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️'
+            };
+
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.25rem;">${icons[type]}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+            }, 4000);
+        }
+        
+        // Función para animar contadores
+        function updateStatElement(elementId, value, suffix = '') {
+            const element = document.getElementById(elementId);
+            if (element) {
+                animateCounter(element, 0, parseInt(value) || 0, suffix);
+            }
+        }
+        
+        function animateCounter(element, start, end, suffix = '') {
+            const duration = 1000;
+            const startTime = performance.now();
+            
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = Math.floor(start + (end - start) * easeOutQuart(progress));
+                element.textContent = current + suffix;
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                }
+            }
+            requestAnimationFrame(updateCounter);
+        }
+
+        function easeOutQuart(t) {
+            return 1 - (--t) * t * t * t;
+        }
+
+    </script>
+</body>
+</html>

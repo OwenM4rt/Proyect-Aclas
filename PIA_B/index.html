@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Asistencia Escolar</title>
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="../Img/logo_aclas.png" class="navbar-logo">
+            <span>RegistroAclas</span>
+        </div>
+        <div class="navbar-nav">
+            <a href="../html/index.html" class="nav-link active">
+                <i class="fas fa-home"></i>
+                Inicio
+            </a>
+            <a href="../html/asistencia.html" class="nav-link">
+                <i class="fas fa-clipboard-check"></i>
+                Asistencia
+            </a>
+            <a href="../php/students.php" class="nav-link">
+                <i class="fas fa-users"></i>
+                Estudiantes
+            </a>
+            <a href="../html/reports.html" class="nav-link">
+                <i class="fas fa-chart-bar"></i>
+                Reportes
+            </a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-background">
+            <div class="hero-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Sistema de <span class="highlight">Asistencia</span> Escolar</h1>
+                <p>Gestiona la asistencia de estudiantes de manera eficiente y moderna. Control total, reportes en tiempo real y una experiencia intuitiva.</p>
+                <div class="hero-buttons">
+                    <a href="../php/students.php" class="btn btn-secondary">
+                        <i class="fas fa-users"></i>
+                        Ver Estudiantes
+                    </a>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalStudents">0</h3>
+                        <p>Estudiantes Registrados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="todayAttendance">0</h3>
+                        <p>Asistencias Hoy</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="attendanceRate">0%</h3>
+                        <p>Tasa de Asistencia</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Características Principales</h2>
+                <p>Todo lo que necesitas para gestionar la asistencia escolar</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-qrcode"></i></div>
+                    <h3>Registro Rápido</h3>
+                    <p>Sistema de códigos únicos para registro instantáneo de asistencia</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Reportes en Tiempo Real</h3>
+                    <p>Visualiza estadísticas y reportes actualizados al instante</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <h3>Diseño Responsivo</h3>
+                    <p>Accede desde cualquier dispositivo con una experiencia optimizada</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Datos Seguros</h3>
+                    <p>Información protegida con los más altos estándares de seguridad</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-clock"></i></div>
+                    <h3>Historial Completo</h3>
+                    <p>Mantén un registro detallado de toda la actividad de asistencia</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-download"></i></div>
+                    <h3>Exportar Datos</h3>
+                    <p>Descarga reportes en múltiples formatos para análisis externos</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="quick-actions">
+        <div class="container">
+            <div class="section-header">
+                <h2>Acciones Rápidas</h2>
+                <p>Accede directamente a las funciones más utilizadas</p>
+            </div>
+            <div class="actions-grid">
+                <a href="../html/asistencia.html" class="action-card">
+                    <div class="action-icon"><i class="fas fa-user-check"></i></div>
+                    <h3>Registrar Asistencia</h3>
+                    <p>Marca la asistencia de estudiantes</p>
+                    <div class="action-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+                <a href="../php/register.php" class="action-card">
+                    <div class="action-icon"><i class="fas fa-user-plus"></i></div>
+                    <h3>Nuevo Estudiante</h3>
+                    <p>Registra un nuevo estudiante</p>
+                    <div class="action-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+                <a href="../html/reports.html" class="action-card">
+                    <div class="action-icon"><i class="fas fa-file-alt"></i></div>
+                    <h3>Ver Reportes</h3>
+                    <p>Consulta estadísticas detalladas</p>
+                    <div class="action-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div id="toastContainer"></div>
+
+    <script>
+        // Eliminar verificación de sesión y restricciones
+        window.addEventListener('DOMContentLoaded', function() {
+            loadStatistics();
+        });
+
+        // Cargar estadísticas simuladas
+        function loadStatistics() {
+            setTimeout(() => {
+                document.getElementById('totalStudents').textContent = '1,247';
+                document.getElementById('todayAttendance').textContent = '823';
+                document.getElementById('attendanceRate').textContent = '89%';
+            }, 1000);
+        }
+
+        // Mostrar notificación simple
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+    </script>
+</body>
+</html>

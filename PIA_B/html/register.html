@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Estudiante - RegistroAclas</title>
+    <link rel="stylesheet" href="../css/register.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Back Button -->
+    <button class="btn-back" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i>
+        Regresar
+    </button>
+
+    <div class="container">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="register-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h2>Registro de Nuevo Estudiante</h2>
+                <p>Completa la información para registrar un nuevo estudiante en el sistema</p>
+            </div>
+
+            <form id="registerForm" class="register-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nombre">
+                            <i class="fas fa-user"></i>
+                            Nombre
+                        </label>
+                        <input type="text" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apellido">
+                            <i class="fas fa-user"></i>
+                            Apellido
+                        </label>
+                        <input type="text" id="apellido" name="apellido" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="documento">
+                            <i class="fas fa-id-card"></i>
+                            Documento de Identidad
+                        </label>
+                        <input type="text" id="documento" name="documento" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fechaNacimiento">
+                            <i class="fas fa-calendar"></i>
+                            Fecha de Nacimiento
+                        </label>
+                        <input type="date" id="fechaNacimiento" name="fechaNacimiento" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="grado">
+                            <i class="fas fa-graduation-cap"></i>
+                            Grado
+                        </label>
+                        <select id="grado" name="grado" required>
+                            <option value="">Selecciona un grado</option>
+                            <option value="7-1">7-1</option>
+                            <option value="7-2">7-2</option>
+                            <option value="8-1">8-1</option>
+                            <option value="8-2">8-2</option>
+                            <option value="9-1">9-1</option>
+                            <option value="9-2">9-2</option>
+                            <option value="10-1">10-1</option>
+                            <option value="10-2">10-2</option>
+                            <option value="11-1">11-1</option>
+                            <option value="11-2">11-2</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-venus-mars"></i>
+                            Género
+                        </label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="masculino" name="genero" value="M" required>
+                                <label for="masculino">Masculino</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="femenino" name="genero" value="F" required>
+                                <label for="femenino">Femenino</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="direccion">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Dirección
+                    </label>
+                    <input type="text" id="direccion" name="direccion" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="telefono">
+                            <i class="fas fa-phone"></i>
+                            Teléfono
+                        </label>
+                        <input type="tel" id="telefono" name="telefono" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            Email (Opcional)
+                        </label>
+                        <input type="email" id="email" name="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-camera"></i>
+                        Foto del Estudiante
+                    </label>
+                    <div class="photo-upload">
+                        <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Haz clic para subir una foto</p>
+                            <span>JPG, PNG - Máximo 2MB</span>
+                        </div>
+                        <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="handlePhotoUpload(this)">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Registrar Estudiante
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <script src="../js/register.js"></script>
+</body>
+</html>

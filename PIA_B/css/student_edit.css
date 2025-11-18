@@ -1,0 +1,156 @@
+/* 🌈 === RESET GENERAL === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", "Poppins", sans-serif;
+}
+
+/* 🌌 === FONDO === */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 1.2s ease-in-out;
+}
+
+/* ✨ ANIMACIÓN DE APARICIÓN SUAVE */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 📦 === CONTENEDOR DEL FORMULARIO === */
+.form-container {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 45px 55px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    width: 420px;
+    transition: all 0.4s ease;
+}
+
+.form-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+}
+
+/* 🏷️ === TÍTULO === */
+form h1 {
+    text-align: center;
+    color: #333;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+form h1::after {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+/* 🧾 === ETIQUETAS === */
+label {
+    font-weight: 600;
+    color: #444;
+    margin-top: 12px;
+    display: block;
+    letter-spacing: 0.5px;
+}
+
+/* ✏️ === CAMPOS DE TEXTO === */
+input[type="text"],
+input[type="email"] {
+    margin-top: 6px;
+    margin-bottom: 18px;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #333;
+    background: #fafafa;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    border-color: #764ba2;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(118, 75, 162, 0.25);
+    outline: none;
+    transform: scale(1.01);
+}
+
+/* 🌟 === BOTÓN ACTUALIZAR === */
+button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+    box-shadow: 0 6px 15px rgba(118, 75, 162, 0.35);
+    transition: all 0.35s ease;
+    letter-spacing: 0.4px;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #5a6fe0, #6f3fb8);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(118, 75, 162, 0.45);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(118, 75, 162, 0.25);
+}
+
+/* 💫 EFECTO “BRILLO” AL PASAR EL MOUSE */
+button::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.3);
+    transition: width 0.3s ease;
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+button:hover::after {
+    width: 100%;
+}
+
+/* 📱 === RESPONSIVE === */
+@media (max-width: 500px) {
+    .form-container {
+        width: 90%;
+        padding: 35px 30px;
+    }
+
+    form h1 {
+        font-size: 24px;
+    }
+
+    input,
+    button {
+        font-size: 15px;
+    }
+}

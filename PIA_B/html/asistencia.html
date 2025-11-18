@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Asistencia - EduControl</title>
+    <link rel="stylesheet" href="../css/asistencia.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> 
+</head>
+<body> 
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="../Img/logo_aclas.png" class="navbar-logo">
+            <span>RegistroAclas</span>
+        </div>
+        <div class="navbar-nav">
+            <a href="../html/index.html" class="nav-link"><i class="fas fa-home"></i>Inicio</a>
+            <a href="../html/asistencia.html" class="nav-link active"><i class="fas fa-clipboard-check"></i>Asistencia</a>
+            <a href="../php/students.php" class="nav-link"><i class="fas fa-users"></i>Estudiantes</a>
+            <a href="../html/reports.html" class="nav-link"><i class="fas fa-chart-bar"></i>Reportes</a>
+        </div>
+        <div class="navbar-counter">
+            <div class="counter">
+                <i class="fas fa-users"></i>
+                <span id="contadorAsistentes">0 Registrados</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="attendance-header">
+            <div class="header-info">
+                <h1>Registro de Asistencia</h1>
+                <p>Fecha: <span id="currentDate"></span></p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="exportAttendance()"><i class="fas fa-download"></i> Exportar</button>
+                <button class="btn btn-success save-btn" onclick="guardarCambios()"><i class="fas fa-save"></i> Guardar Cambios</button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE BÚSQUEDA -->
+        <div class="search-section">
+            <div class="search-container">
+                <div class="search-input-group">
+                    <div class="input-icon">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="codigoInput" placeholder="Ingresa el código del estudiante..." autocomplete="off">
+                    </div>
+                    <button class="btn btn-primary" onclick="registrarAsistencia()"><i class="fas fa-plus"></i> Registrar</button>
+                </div>
+                <div class="student-preview">
+                    <div class="student-photo">
+                        <img id="fotoEstudiante" src="../Img/avatar.png" alt="Foto del estudiante">
+                    </div>
+                    <div class="student-info">
+                        <h3 id="studentName">Estudiante</h3>
+                        <p id="studentGrade">Grado</p>
+                        <span id="studentCode">Código</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="table-header">
+                <h2>Estudiantes Registrados Hoy</h2>
+                <div class="table-filters">
+                    <select id="gradeFilter" onchange="filterTable()">
+                        <option value="">Todos los grados</option>
+                        <option value="10-1">10-1</option>
+                        <option value="11-1">11-1</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="emptyState" class="empty-state">
+                <div class="empty-icon"><i class="fas fa-clipboard-list"></i></div>
+                <h3>No hay registros de asistencia</h3>
+                <p>Los estudiantes que registren su asistencia aparecerán aquí</p>
+            </div>
+
+            <div class="table-container">
+                <table id="tablaAsistencia" class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Grado</th>
+                            <th>Hora de Registro</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script>
+        document.getElementById("currentDate").innerText = new Date().toLocaleDateString();
+        let unsavedChanges = false;
+
+        function showToast(message, type='info'){
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(()=>toast.remove(),3000);
+        }
+
+        window.addEventListener('beforeunload', e=>{
+            if(unsavedChanges){
+                e.preventDefault();
+                e.returnValue='Tiene cambios sin guardar. ¿Seguro que desea salir?';
+            }
+        });
+
+        function markAsUnsaved(){ unsavedChanges = true; }
+
+        async function registrarAsistencia(){
+            const codigo = document.getElementById("codigoInput").value.trim();
+            if(!codigo){ showToast("Ingresa un código",'warning'); return; }
+
+            const rows=document.querySelectorAll("#cuerpoTabla tr");
+            if(Array.from(rows).some(r=>r.cells[0].innerText===codigo)){
+                showToast("Estudiante ya registrado hoy",'error');
+                return;
+            }
+
+            try{
+                const res = await fetch(`../php/attendance.php?action=find&codigo=${codigo}`);
+                const estudiante = await res.json();
+                if(estudiante.error){ showToast(estudiante.error,'error'); return; }
+
+                document.getElementById("studentName").innerText=estudiante.nombre;
+                document.getElementById("studentGrade").innerText=estudiante.grado;
+                document.getElementById("studentCode").innerText=estudiante.codigo;
+                document.getElementById("fotoEstudiante").src = estudiante.foto || '../Img/avatar.png';
+
+                const now = new Date();
+                const hora = now.toLocaleTimeString();
+
+                const tbody = document.getElementById("cuerpoTabla");
+                const row = document.createElement("tr");
+                row.innerHTML=`
+                    <td>${estudiante.codigo}</td>
+                    <td>${estudiante.nombre}</td>
+                    <td>${estudiante.grado}</td>
+                    <td>${hora}</td>
+                    <td>Presente</td>
+                    <td><button onclick="this.closest('tr').remove(); actualizarContador(); markAsUnsaved()">❌</button></td>
+                `;
+                tbody.appendChild(row);
+
+                markAsUnsaved();
+                actualizarContador();
+                filterTable();
+                showToast(`Asistencia registrada para ${estudiante.nombre}`,'success');
+                document.getElementById("codigoInput").value='';
+
+            }catch(e){
+                console.error(e);
+                showToast("Error al buscar estudiante",'error');
+            }
+        }
+
+        function actualizarContador(){
+            const count = document.querySelectorAll("#cuerpoTabla tr").length;
+            document.getElementById("contadorAsistentes").innerText = count+" Registrados";
+            document.getElementById("emptyState").style.display = count===0 ? "flex":"none";
+        }
+
+        function filterTable(){
+            const searchText = document.getElementById("codigoInput").value.trim().toLowerCase();
+            const filterGrade = document.getElementById("gradeFilter").value;
+            const rows=document.querySelectorAll("#cuerpoTabla tr");
+            rows.forEach(r=>{
+                const codigo=r.cells[0].innerText.toLowerCase();
+                const nombre=r.cells[1].innerText.toLowerCase();
+                const grado=r.cells[2].innerText;
+                r.style.display=( (codigo.includes(searchText)||nombre.includes(searchText)) && (filterGrade==="" || grado===filterGrade) ) ? "" : "none";
+            });
+        }
+
+        function exportAttendance(){
+            const table=document.getElementById('tablaAsistencia');
+            const ws=XLSX.utils.table_to_sheet(table);
+            const wb=XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "AsistenciaHoy");
+            const today=new Date().toLocaleDateString('es-ES').replace(/\//g,'-');
+            XLSX.writeFile(wb, `Asistencia_${today}.xlsx`);
+            showToast("Reporte exportado con éxito",'success');
+        }
+
+        async function guardarCambios(){
+            if(!unsavedChanges){ showToast("No hay cambios nuevos para guardar",'info'); return; }
+
+            const rows=document.querySelectorAll("#cuerpoTabla tr");
+            if(rows.length===0){ showToast("No hay asistencias para guardar",'warning'); return; }
+
+            const data=[];
+            rows.forEach(r=>{
+                data.push({
+                    codigo: r.cells[0].innerText,
+                    hora: r.cells[3].innerText,
+                    estado: r.cells[4].innerText
+                });
+            });
+
+            try{
+                const res = await fetch("../php/attendance.php?action=save_attendance",{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if(result.success){ unsavedChanges=false; showToast(result.success,'success'); }
+                else showToast(result.error || "Error al guardar",'error');
+            }catch(e){
+                console.error(e);
+                showToast("Error al guardar asistencia",'error');
+            }
+        }
+    </script>
+</body>
+</html>
